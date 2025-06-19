@@ -58,24 +58,30 @@ target_include_directories(tblis_example PRIVATE
 target_link_libraries(tblis_example PRIVATE tblis)
 add_test(NAME tblis_example COMMAND tblis_example)
 
-# Build and register the full test suite
-file(GLOB TEST_SRC
-    test/test.cxx
+# Build and register each test file as its own executable
+file(GLOB TEST_FILES
     test/1t/*.cxx
     test/3m/*.cxx
     test/3t/*.cxx
 )
-add_executable(tblis_test ${TEST_SRC})
-target_include_directories(tblis_test PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/external/catch
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/external/marray/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/external/stl_ext/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/external/tci
-    ${CMAKE_CURRENT_BINARY_DIR}/src/external/tci
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_BINARY_DIR}/src/configs
-    ${CMAKE_BINARY_DIR}/include
-)
-target_link_libraries(tblis_test PRIVATE tblis)
-add_test(NAME tblis_test COMMAND tblis_test)
+set(TEST_SUPPORT test/test.cxx)
+foreach(src ${TEST_FILES})
+    get_filename_component(name_we ${src} NAME_WE)
+    get_filename_component(dir ${src} DIRECTORY)
+    get_filename_component(dir_name ${dir} NAME)
+    set(test_name "${dir_name}_${name_we}")
+    add_executable(${test_name} ${TEST_SUPPORT} ${src})
+    target_include_directories(${test_name} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/external/catch
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/external/marray/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/external/stl_ext/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/external/tci
+        ${CMAKE_CURRENT_BINARY_DIR}/src/external/tci
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_BINARY_DIR}/src/configs
+        ${CMAKE_BINARY_DIR}/include
+    )
+    target_link_libraries(${test_name} PRIVATE tblis)
+    add_test(NAME ${test_name} COMMAND ${test_name})
+endforeach()
 
