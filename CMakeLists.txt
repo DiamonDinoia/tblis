@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(tblis LANGUAGES C CXX)
 
+find_package(Threads REQUIRED)
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -47,7 +49,7 @@ target_include_directories(tblis PUBLIC
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
 )
 
-target_link_libraries(tblis PUBLIC tci pthread atomic)
+target_link_libraries(tblis PUBLIC tci Threads::Threads atomic)
 
 # Tests
 enable_testing()
