@@ -32,8 +32,8 @@ jobs:
         run: |
           cd autobuild
           make -j$(nproc)
-      - name: Make check
+      - name: Run tests (Autotools)
         run: |
           cd autobuild
-          make check
+          ./bin/test || (echo "Test executable failed" && exit 1)
 
