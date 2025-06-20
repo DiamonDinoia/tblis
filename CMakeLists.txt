@@ -67,23 +67,43 @@ file(GLOB TEST_FILES
     test/3t/*.cxx
 )
 set(TEST_SUPPORT test/test.cxx)
-foreach(src ${TEST_FILES})
-    get_filename_component(name_we ${src} NAME_WE)
-    get_filename_component(dir ${src} DIRECTORY)
-    get_filename_component(dir_name ${dir} NAME)
-    set(test_name "${dir_name}_${name_we}")
-    add_executable(${test_name} ${TEST_SUPPORT} ${src})
-    target_include_directories(${test_name} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/external/catch
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/external/marray/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/external/stl_ext/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/external/tci
-        ${CMAKE_CURRENT_BINARY_DIR}/src/external/tci
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_BINARY_DIR}/src/configs
-        ${CMAKE_BINARY_DIR}/include
-    )
-    target_link_libraries(${test_name} PRIVATE tblis)
-    add_test(NAME ${test_name} COMMAND ${test_name})
-endforeach()
+
+option(TBLIS_BUILD_SEPARATE_TESTS "Build each test as its own executable" OFF)
+
+if(TBLIS_BUILD_SEPARATE_TESTS)
+    foreach(src ${TEST_FILES})
+        get_filename_component(name_we ${src} NAME_WE)
+        get_filename_component(dir ${src} DIRECTORY)
+        get_filename_component(dir_name ${dir} NAME)
+        set(test_name "${dir_name}_${name_we}")
+        add_executable(${test_name} ${TEST_SUPPORT} ${src})
+        target_include_directories(${test_name} PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/external/catch
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/external/marray/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/external/stl_ext/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/external/tci
+            ${CMAKE_CURRENT_BINARY_DIR}/src/external/tci
+            ${CMAKE_CURRENT_SOURCE_DIR}/src
+            ${CMAKE_CURRENT_BINARY_DIR}/src/configs
+            ${CMAKE_BINARY_DIR}/include
+        )
+        target_link_libraries(${test_name} PRIVATE tblis)
+        add_test(NAME ${test_name} COMMAND ${test_name})
+    endforeach()
+endif()
+
+# Create a single test driver mirroring the Autotools build
+add_executable(tblis_test ${TEST_SUPPORT} ${TEST_FILES})
+target_include_directories(tblis_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/external/catch
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/external/marray/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/external/stl_ext/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/external/tci
+    ${CMAKE_CURRENT_BINARY_DIR}/src/external/tci
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_BINARY_DIR}/src/configs
+    ${CMAKE_BINARY_DIR}/include
+)
+target_link_libraries(tblis_test PRIVATE tblis)
+add_test(NAME tblis_autotools_tests COMMAND tblis_test)
 
